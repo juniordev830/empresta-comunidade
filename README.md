@@ -4,11 +4,11 @@ Empréstimo de livros, ferramentas e equipamentos entre participantes.
 
 ## Estado atual
 
-Projeto em planejamento. Este repositório contém a definição do projeto; ainda não há aplicação executável, interface ou testes implementados.
+MVP executável em branch de desenvolvimento, com testes automatizados. Catálogo em memória com empréstimo e devolução de itens. Ainda não há usuários, API ou persistência.
 
-## Tecnologias propostas
+## Tecnologias implementadas
 
-Ruby on Rails e PostgreSQL. A escolha será confirmada ao iniciar a implementação.
+Ruby 3.3 e Minitest.
 
 ## Escopo da primeira versão
 
@@ -25,7 +25,13 @@ Ruby on Rails e PostgreSQL. A escolha será confirmada ao iniciar a implementaç
 
 ## Desenvolvimento
 
-As funcionalidades acima são planejadas. Os comandos de instalação e a estrutura do código serão documentados junto da primeira implementação. Não há integrações externas ou serviços ativos nesta etapa.
+Execute na raiz do repositório:
+
+```bash
+ruby -Ilib test/test_empresta_comunidade.rb
+```
+
+O GitHub Actions executa a validação em pushes e pull requests. Este é um núcleo demonstrativo; as funcionalidades ainda marcadas como pendentes na lista acima continuam planejadas.
 
 ## Privacidade e configuração
 
