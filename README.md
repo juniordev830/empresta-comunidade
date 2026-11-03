@@ -1,42 +1,45 @@
 # Empresta Comunidade
 
-Empréstimo de livros, ferramentas e equipamentos entre participantes.
+Catálogo em **Ruby 3.3** para emprestar livros, ferramentas e equipamentos, registrar responsáveis e controlar devoluções e atrasos.
 
-## Estado atual
+## Funcionalidades
 
-MVP executável em branch de desenvolvimento, com testes automatizados. Catálogo em memória com empréstimo e devolução de itens. Ainda não há usuários, API ou persistência.
+- `cadastrar(id, nome)` inclui um item único, rejeitando IDs repetidos mesmo durante empréstimos ativos.
+- `emprestar(id)` e `devolver(item)` permanecem disponíveis para uso simples.
+- `emprestar(id, pessoa:, data_emprestimo:, prazo:)` registra um empréstimo com nome de referência, data e prazo explícitos.
+- `emprestimos_atrasados(hoje)` devolve os empréstimos cujo prazo é **anterior** ao dia consultado, em ordem de vencimento; o dia do prazo não conta como atraso.
+- `emprestimos_ativos` fornece uma lista imutável para consultas. Não é possível devolver um item que não está emprestado nem forjar um item com o mesmo ID.
 
-## Tecnologias implementadas
+## Exemplo
 
-Ruby 3.3 e Minitest.
+```ruby
+require "date"
+require_relative "lib/empresta_comunidade"
 
-## Escopo da primeira versão
+catalogo = Catalogo.new
+item = catalogo.cadastrar("furadeira-1", "Furadeira")
+catalogo.emprestar(
+  item.id,
+  pessoa: "Participante fictício",
+  data_emprestimo: Date.new(2026, 11, 3),
+  prazo: Date.new(2026, 11, 10)
+)
+puts catalogo.emprestimos_atrasados(Date.new(2026, 11, 11)).map { |e| e.item.nome }
+catalogo.devolver(item)
+```
 
-- [ ] Cadastrar itens e participantes
-- [x] Registrar empréstimos e devoluções
-- [ ] Consultar atrasos
+O empréstimo antigo sem dados de prazo continua funcionando, mas não pode aparecer na consulta de atrasos por não ter vencimento definido.
 
-## Critérios para concluir a primeira versão
-
-- [ ] Implementar o fluxo principal com validação de entradas e tratamento de erros.
-- [ ] Documentar instalação, configuração e execução com comandos reproduzíveis.
-- [ ] Adicionar exemplos de uso e dados fictícios.
-- [ ] Verificar os casos principais e limites e registrar os resultados.
-
-## Desenvolvimento
-
-Execute na raiz do repositório:
+## Testes
 
 ```bash
 ruby -Ilib test/test_empresta_comunidade.rb
 ```
 
-O GitHub Actions executa a validação em pushes e pull requests. Este é um núcleo demonstrativo; as funcionalidades ainda marcadas como pendentes na lista acima continuam planejadas.
+A suíte Minitest cobre empréstimos, prazo, devolução, duplicidade, objetos inválidos e coleções imutáveis; o GitHub Actions executa os testes automaticamente.
 
-## Privacidade e configuração
+## Limites
 
-Usar dados fictícios nos exemplos e manter senhas, tokens, arquivos pessoais e credenciais fora do controle de versão.
+MVP em memória, de processo único, sem API, persistência, autenticação, cobrança ou notificações. Um nome no empréstimo não equivale a autenticação de participante; para produção é necessário acrescentar cadastro, autorização e proteção de dados. Os exemplos são fictícios e não devem conter informações reais de terceiros.
 
-## Licença
-
-Ainda não definida.
+Licença: ainda não definida.
