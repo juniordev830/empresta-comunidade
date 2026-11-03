@@ -13,7 +13,7 @@ Ruby 3.3 e Minitest.
 ## Escopo da primeira versão
 
 - [ ] Cadastrar itens e participantes
-- [ ] Registrar empréstimos e devoluções
+- [x] Registrar empréstimos e devoluções
 - [ ] Consultar atrasos
 
 ## Critérios para concluir a primeira versão
