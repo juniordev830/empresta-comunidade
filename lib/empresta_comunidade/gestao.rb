@@ -280,11 +280,21 @@ module EmprestaComunidade
         inicio = Date.iso8601(loan.fetch("retirada"))
         prazo = Date.iso8601(loan.fetch("prazo"))
         raise ArgumentError, "prazo inválido" if prazo < inicio
-        gestao.emprestar(loan.fetch("item_id"), loan.fetch("participante_id"),
-                         dias: (prazo - inicio).to_i, data: inicio)
+        item_id = loan.fetch("item_id")
+        participante_id = loan.fetch("participante_id")
         renovacoes = loan.fetch("renovacoes")
         raise ArgumentError, "renovações inválidas" unless renovacoes.is_a?(Integer) && renovacoes.between?(0, MAX_RENOVACOES)
-        gestao.instance_variable_get(:@ativos).fetch(loan.fetch("item_id"))["renovacoes"] = renovacoes
+        raise ArgumentError, "prazo excessivo" unless (prazo - inicio).to_i.between?(1, 270)
+        raise ArgumentError, "empréstimo duplicado" if gestao.instance_variable_get(:@ativos).key?(item_id)
+        gestao.send(:item!, item_id)
+        participante = gestao.send(:participante!, participante_id)
+        gestao.catalogo.emprestar(item_id, pessoa: participante.fetch("nome"),
+                                 data_emprestimo: inicio, prazo: prazo)
+        gestao.instance_variable_get(:@ativos)[item_id] = {
+          "item_id" => item_id, "participante_id" => participante_id,
+          "retirada" => inicio.iso8601, "prazo" => prazo.iso8601,
+          "renovacoes" => renovacoes
+        }
       end
       dados.fetch("filas").each do |item_id, fila|
         raise ArgumentError, "fila inválida" unless fila.is_a?(Array) && fila.uniq == fila
