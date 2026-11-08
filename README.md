@@ -1,45 +1,72 @@
 # Empresta Comunidade
 
-Catálogo em **Ruby 3.3** para emprestar livros, ferramentas e equipamentos, registrar responsáveis e controlar devoluções e atrasos.
+Aplicação local em Ruby para organizar o empréstimo comunitário de livros,
+ferramentas e equipamentos. **Sem servidor, contas externas ou dependências de produção.**
 
-## Funcionalidades
+## Recursos implementados
 
-- `cadastrar(id, nome)` inclui um item único, rejeitando IDs repetidos mesmo durante empréstimos ativos.
-- `emprestar(id)` e `devolver(item)` permanecem disponíveis para uso simples.
-- `emprestar(id, pessoa:, data_emprestimo:, prazo:)` registra um empréstimo com nome de referência, data e prazo explícitos.
-- `emprestimos_atrasados(hoje)` devolve os empréstimos cujo prazo é **anterior** ao dia consultado, em ordem de vencimento; o dia do prazo não conta como atraso.
-- `emprestimos_ativos` fornece uma lista imutável para consultas. Não é possível devolver um item que não está emprestado nem forjar um item com o mesmo ID.
+- Catálogo legado `Catalogo` preservado (API `cadastrar`, `emprestar`, `devolver` e `disponivel?`).
+- Participantes com identificador único, nome e contato opcional.
+- Itens categorizados, descrições e busca por texto/disponibilidade.
+- Empréstimos com prazo configurável (1 a 90 dias), limite de três por participante.
+- Atrasos calculados por dia, sem considerar o próprio vencimento como atraso.
+- Renovações limitadas a duas, bloqueadas após o vencimento ou diante de reservas.
+- Lista de espera FIFO, cancelamento e prioridade de quem reservou primeiro.
+- Histórico auditável, indicadores operacionais e exportação CSV.
+- Persistência JSON local com escrita por arquivo temporário e restauração validada.
 
-## Exemplo
+## Requisitos e testes
+
+Ruby 3.3, biblioteca padrão (Minitest, CSV, JSON, Date e Tempfile).
+Não é necessário instalar gems adicionais.
+
+```sh
+ruby -Ilib -Itest -e 'Dir["test/test_*.rb"].sort.each { |file| require_relative file }'
+```
+
+O GitHub Actions executa verificação de sintaxe e toda a suíte de testes a cada push e PR.
+
+## Exemplo completo
 
 ```ruby
 require "date"
-require_relative "lib/empresta_comunidade"
+require_relative "lib/empresta_comunidade/gestao"
 
-catalogo = Catalogo.new
-item = catalogo.cadastrar("furadeira-1", "Furadeira")
-catalogo.emprestar(
-  item.id,
-  pessoa: "Participante fictício",
-  data_emprestimo: Date.new(2026, 11, 3),
-  prazo: Date.new(2026, 11, 10)
-)
-puts catalogo.emprestimos_atrasados(Date.new(2026, 11, 11)).map { |e| e.item.nome }
-catalogo.devolver(item)
+gestao = EmprestaComunidade::Gestao.new
+gestao.cadastrar_participante("ana", "Ana", contato: "ana@example.test")
+gestao.cadastrar_participante("bia", "Bia")
+gestao.cadastrar_item("furadeira", "Furadeira", categoria: "ferramenta")
+
+gestao.emprestar("furadeira", "ana", dias: 7, data: Date.new(2026, 11, 8))
+gestao.reservar("furadeira", "bia")
+puts gestao.atrasados(data: Date.new(2026, 11, 16))
+gestao.devolver("furadeira", data: Date.new(2026, 11, 16))
+gestao.emprestar("furadeira", "bia", dias: 14, data: Date.new(2026, 11, 16))
+
+puts gestao.exportar_csv
+gestao.salvar("estado.json")
+restaurado = EmprestaComunidade::Gestao.carregar("estado.json")
+puts restaurado.estatisticas
 ```
 
-O empréstimo antigo sem dados de prazo continua funcionando, mas não pode aparecer na consulta de atrasos por não ter vencimento definido.
+## Contratos e regras
 
-## Testes
+`Gestao` é uma camada opcional sobre o catálogo original. IDs são strings não vazias
+de até 200 caracteres. Datas de operação são instâncias `Date`. O empréstimo
+só pode ser feito se o item estiver disponível e, havendo fila, se o solicitante
+for o primeiro. A devolução não permite data anterior à retirada. As consultas
+retornam cópias dos registros, evitando mutações externas acidentais.
 
-```bash
-ruby -Ilib test/test_empresta_comunidade.rb
-```
+O JSON salvo contém dados dos participantes, catálogo, empréstimos, reservas
+e eventos. **Não salve contatos reais em repositórios públicos.** Adicione
+`estado.json` ao `.gitignore` de sua instalação ou armazene-o fora do repositório.
+O sistema não implementa autenticação, sincronização multiusuário ou criptografia
+dos arquivos locais. Para produção, planeje controle de acesso, backup e
+persistência transacional.
 
-A suíte Minitest cobre empréstimos, prazo, devolução, duplicidade, objetos inválidos e coleções imutáveis; o GitHub Actions executa os testes automaticamente.
+## Evolução e compatibilidade
 
-## Limites
-
-MVP em memória, de processo único, sem API, persistência, autenticação, cobrança ou notificações. Um nome no empréstimo não equivale a autenticação de participante; para produção é necessário acrescentar cadastro, autorização e proteção de dados. Os exemplos são fictícios e não devem conter informações reais de terceiros.
-
-Licença: ainda não definida.
+A API original de `Catalogo` continua utilizável sem `Gestao`. Esta branch
+parte da implementação de prazos já desenvolvida em uma PR anterior, sem alterar
+a `main`. O código de aplicação e os testes estão separados em
+`lib/empresta_comunidade/gestao.rb` e `test/test_gestao.rb`.
