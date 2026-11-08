@@ -260,7 +260,6 @@ class GestaoTest < Minitest::Test
   def test_persistence_roundtrip_preserves_loan_and_waitlist
     @gestao.emprestar("livro", "ana", dias: 4)
     @gestao.reservar("livro", "bia")
-    @gestao.renovar("camera", "bia") if false # no-op: unrelated item stays available
     Dir.mktmpdir do |dir|
       path = File.join(dir, "estado.json")
       assert_equal path, @gestao.salvar(path)
@@ -282,6 +281,20 @@ class GestaoTest < Minitest::Test
       restored = EmprestaComunidade::Gestao.carregar(path, hoje: -> { DIA })
       assert_equal 1, restored.emprestimos_ativos.first["renovacoes"]
       assert_equal "2026-11-29", restored.emprestimos_ativos.first["prazo"]
+    end
+  end
+
+  def test_persistence_roundtrip_with_long_renewed_period
+    @gestao.emprestar("livro", "ana", dias: 90)
+    @gestao.renovar("livro", "ana", dias: 90)
+    @gestao.renovar("livro", "ana", dias: 90)
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "estado.json")
+      @gestao.salvar(path)
+      restored = EmprestaComunidade::Gestao.carregar(path, hoje: -> { DIA })
+      assert_equal 2, restored.emprestimos_ativos.first["renovacoes"]
+      assert_equal (DIA + 270).iso8601, restored.emprestimos_ativos.first["prazo"]
+      assert_equal @gestao.snapshot, restored.snapshot
     end
   end
 
