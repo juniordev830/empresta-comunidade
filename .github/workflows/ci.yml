@@ -16,5 +16,6 @@ jobs:
           ruby -c lib/empresta_comunidade/gestao.rb
           ruby -c test/test_empresta_comunidade.rb
           ruby -c test/test_gestao.rb
+          ruby -c test/test_csv_security.rb
       - name: Unit and integration tests
         run: ruby -Ilib -Itest -e 'Dir["test/test_*.rb"].sort.each { |file| require_relative file }'
