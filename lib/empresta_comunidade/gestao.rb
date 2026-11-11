@@ -322,7 +322,7 @@ module EmprestaComunidade
     def csv_safe_cell(value)
       return value unless value.is_a?(String)
 
-      value.match?(/\\A[\\s\\p{Z}\\p{Cf}]*[=+\\-@]/u) ? "'" + value : value
+      value.match?(/\A[\s\p{Z}\p{Cf}]*[=+\-@]/u) ? "'" + value : value
     end
 
     def hoje
