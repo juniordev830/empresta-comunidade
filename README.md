@@ -12,7 +12,7 @@ ferramentas e equipamentos. **Sem servidor, contas externas ou dependências de 
 - Atrasos calculados por dia, sem considerar o próprio vencimento como atraso.
 - Renovações limitadas a duas, bloqueadas após o vencimento ou diante de reservas.
 - Lista de espera FIFO, cancelamento e prioridade de quem reservou primeiro.
-- Histórico auditável, indicadores operacionais e exportação CSV.
+- Histórico auditável, indicadores operacionais e exportação CSV com proteção contra células interpretadas como fórmulas.
 - Persistência JSON local com escrita por arquivo temporário e restauração validada.
 
 ## Requisitos e testes
@@ -48,6 +48,20 @@ gestao.salvar("estado.json")
 restaurado = EmprestaComunidade::Gestao.carregar("estado.json")
 puts restaurado.estatisticas
 ```
+
+## Exportação segura para planilhas
+
+`Gestao#exportar_csv` gera um CSV de empréstimos ativos em memória. Além do
+escaping padrão de aspas e delimitadores, valores de texto iniciados por
+`=`, `+`, `-` ou `@` (inclusive após espaços ou caracteres de formato
+Unicode) são prefixados com apóstrofo para reduzir o risco de execução de
+fórmulas ao abrir o arquivo em planilhas.
+
+A proteção é aplicada **somente à saída CSV**: os IDs, nomes e demais campos
+no catálogo, histórico e JSON salvo continuam com os valores originais. Testes
+cobrem conteúdo suspeito, espaços Unicode, células legítimas e exportação vazia.
+Guarde relatórios de empréstimos em local privado, pois os dados podem indicar
+quem está com cada item.
 
 ## Contratos e regras
 
