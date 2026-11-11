@@ -27,12 +27,12 @@ class CsvSecurityTest < Minitest::Test
     original = @app.snapshot
     rows = CSV.parse(@app.exportar_csv, headers: true)
     assert_equal 4, rows.length
-    assert_equal "'=item1", rows[0]["item_id"]
-    assert_equal "'=1+1", rows[0]["nome"]
-    assert_equal "'@planilha", rows[0]["participante_id"]
-    assert_equal "'+SOMA(1;2)", rows[1]["nome"]
-    assert_equal "'-42", rows[2]["nome"]
-    assert_equal "'@funcao", rows[3]["nome"]
+    by_id = rows.to_h { |row| [row["item_id"], row] }
+    assert_equal "'=1+1", by_id.fetch("'=item1")["nome"]
+    assert_equal "'@planilha", by_id.fetch("'=item1")["participante_id"]
+    assert_equal "'+SOMA(1;2)", by_id.fetch("mais")["nome"]
+    assert_equal "'-42", by_id.fetch("menos")["nome"]
+    assert_equal "'@funcao", by_id.fetch("arroba")["nome"]
     assert_equal original, @app.snapshot
     assert_equal "=1+1", @app.itens.find { |item| item["id"] == "=item1" }["nome"]
   end
