@@ -230,9 +230,10 @@ module EmprestaComunidade
         csv << %w[item_id nome categoria participante_id retirada prazo renovacoes]
         emprestimos_ativos.each do |loan|
           item = @metadados.fetch(loan.fetch("item_id"))
-          csv << [loan.fetch("item_id"), item.fetch("nome"), item.fetch("categoria"),
-                  loan.fetch("participante_id"), loan.fetch("retirada"),
-                  loan.fetch("prazo"), loan.fetch("renovacoes")]
+          row = [loan.fetch("item_id"), item.fetch("nome"), item.fetch("categoria"),
+                 loan.fetch("participante_id"), loan.fetch("retirada"),
+                 loan.fetch("prazo"), loan.fetch("renovacoes")]
+          csv << row.map { |value| csv_safe_cell(value) }
         end
       end
     end
@@ -315,6 +316,14 @@ module EmprestaComunidade
     end
 
     private
+
+    # CSV quoting alone does not prevent formulas from executing in spreadsheet
+    # software. Preserve raw JSON records and only escape risky CSV text cells.
+    def csv_safe_cell(value)
+      return value unless value.is_a?(String)
+
+      value.match?(/\\A[\\s\\p{Z}\\p{Cf}]*[=+\\-@]/u) ? "'" + value : value
+    end
 
     def hoje
       data_valida(@hoje.call)
