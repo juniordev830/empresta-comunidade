@@ -84,3 +84,15 @@ A API original de `Catalogo` continua utilizável sem `Gestao`. Esta branch
 parte da implementação de prazos já desenvolvida em uma PR anterior, sem alterar
 a `main`. O código de aplicação e os testes estão separados em
 `lib/empresta_comunidade/gestao.rb` e `test/test_gestao.rb`.
+
+## Privacidade e configuração
+
+Usar dados fictícios nos exemplos e manter senhas, tokens, arquivos pessoais e credenciais fora do controle de versão.
+
+## Licença
+
+Ainda não definida.
+
+## Documentação para manutenção
+
+O [guia de validação](docs/GUIA_DE_VALIDACAO.md) contém testes de regressão, pontos críticos e critérios para revisar a próxima alteração.
