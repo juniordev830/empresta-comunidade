@@ -13,8 +13,8 @@ class Catalogo
   end
 
   def cadastrar(id, nome)
-    raise ArgumentError, "id obrigatório" unless id.is_a?(String) && !id.strip.empty?
-    raise ArgumentError, "nome obrigatório" unless nome.is_a?(String) && !nome.strip.empty?
+    raise ArgumentError, "id obrigatório" unless id.is_a?(String) && id.strip.length.between?(1, 200) && !id.match?(/[[:cntrl:]]/)
+    raise ArgumentError, "nome obrigatório" unless nome.is_a?(String) && nome.strip.length.between?(1, 200) && !nome.match?(/[[:cntrl:]]/)
 
     id = id.strip
     raise ArgumentError, "id já cadastrado" if @itens.key?(id)
@@ -35,7 +35,7 @@ class Catalogo
       raise ArgumentError, "informe pessoa, data_emprestimo e prazo juntos"
     end
     unless details.all?(&:nil?)
-      raise ArgumentError, "pessoa obrigatória" unless pessoa.is_a?(String) && !pessoa.strip.empty?
+      raise ArgumentError, "pessoa obrigatória" unless pessoa.is_a?(String) && pessoa.strip.length.between?(1, 200) && !pessoa.match?(/[[:cntrl:]]/)
       unless data_emprestimo.instance_of?(Date) && prazo.instance_of?(Date) && prazo >= data_emprestimo
         raise ArgumentError, "datas de empréstimo inválidas"
       end
