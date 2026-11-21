@@ -6,6 +6,8 @@ Item = Struct.new(:id, :nome, keyword_init: true) unless defined?(Item)
 Emprestimo = Struct.new(:item, :pessoa, :data_emprestimo, :prazo, keyword_init: true) unless defined?(Emprestimo)
 
 class Catalogo
+  MAX_ITEMS = 5_000
+
   def initialize
     @itens = {}
     @disponiveis = {}
@@ -13,11 +15,12 @@ class Catalogo
   end
 
   def cadastrar(id, nome)
-    raise ArgumentError, "id obrigatório" unless id.is_a?(String) && !id.strip.empty?
-    raise ArgumentError, "nome obrigatório" unless nome.is_a?(String) && !nome.strip.empty?
+    raise ArgumentError, "id obrigatório" unless id.is_a?(String) && id.strip.length.between?(1, 200) && !id.match?(/[[:cntrl:]]/)
+    raise ArgumentError, "nome obrigatório" unless nome.is_a?(String) && nome.strip.length.between?(1, 200) && !nome.match?(/[[:cntrl:]]/)
 
     id = id.strip
     raise ArgumentError, "id já cadastrado" if @itens.key?(id)
+    raise ArgumentError, "limite de itens atingido" if @itens.size >= MAX_ITEMS
 
     item = Item.new(id: id.freeze, nome: nome.strip.freeze).freeze
     @itens[id] = item
@@ -35,7 +38,7 @@ class Catalogo
       raise ArgumentError, "informe pessoa, data_emprestimo e prazo juntos"
     end
     unless details.all?(&:nil?)
-      raise ArgumentError, "pessoa obrigatória" unless pessoa.is_a?(String) && !pessoa.strip.empty?
+      raise ArgumentError, "pessoa obrigatória" unless pessoa.is_a?(String) && pessoa.strip.length.between?(1, 200) && !pessoa.match?(/[[:cntrl:]]/)
       unless data_emprestimo.instance_of?(Date) && prazo.instance_of?(Date) && prazo >= data_emprestimo
         raise ArgumentError, "datas de empréstimo inválidas"
       end

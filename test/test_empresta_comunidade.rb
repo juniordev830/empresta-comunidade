@@ -3,6 +3,30 @@ require "minitest/autorun"
 require_relative "../lib/empresta_comunidade"
 
 class CatalogoTest < Minitest::Test
+  def test_rejects_unsafe_catalog_names_and_borrower_text
+    catalog = Catalogo.new
+    ["", "X" * 201, "falso\nID"].each do |id|
+      assert_raises(ArgumentError) { catalog.cadastrar(id, "Livro") }
+    end
+    ["A" * 201, "Livro\tInvalido"].each do |name|
+      assert_raises(ArgumentError) { catalog.cadastrar("ok", name) }
+    end
+    catalog.cadastrar("ok", "Livro")
+    day = Date.new(2026, 11, 21)
+    assert_raises(ArgumentError) do
+      catalog.emprestar("ok", pessoa: "Ana\nB", data_emprestimo: day, prazo: day + 1)
+    end
+    assert catalog.disponivel?("ok")
+  end
+
+  def test_rejects_catalog_growth_past_five_thousand_items
+    catalog = Catalogo.new
+    5_000.times { |number| catalog.cadastrar("item-#{number}", "Livro") }
+    assert_raises(ArgumentError) { catalog.cadastrar("extra", "Livro") }
+    assert catalog.disponivel?("item-4999")
+    assert_raises(ArgumentError) { catalog.cadastrar("item-4999", "Duplicado") }
+  end
+
   def test_controls_lending_and_return
     catalog = Catalogo.new
     catalog.cadastrar("ferramenta-1", " Furadeira ")
