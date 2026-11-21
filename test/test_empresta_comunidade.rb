@@ -19,6 +19,14 @@ class CatalogoTest < Minitest::Test
     assert catalog.disponivel?("ok")
   end
 
+  def test_rejects_catalog_growth_past_five_thousand_items
+    catalog = Catalogo.new
+    5_000.times { |number| catalog.cadastrar("item-#{number}", "Livro") }
+    assert_raises(ArgumentError) { catalog.cadastrar("extra", "Livro") }
+    assert catalog.disponivel?("item-4999")
+    assert_raises(ArgumentError) { catalog.cadastrar("item-4999", "Duplicado") }
+  end
+
   def test_controls_lending_and_return
     catalog = Catalogo.new
     catalog.cadastrar("ferramenta-1", " Furadeira ")
