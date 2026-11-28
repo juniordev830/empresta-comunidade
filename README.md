@@ -1,5 +1,7 @@
 # Empresta Comunidade
 
+**Navegação** · [Recursos implementados](#recursos-implementados) · [Requisitos e testes](#requisitos-e-testes) · [Exemplo completo](#exemplo-completo) · [Código e estudo](docs/ENGENHARIA_REVERSA.md)
+
 Aplicação local em Ruby para organizar o empréstimo comunitário de livros,
 ferramentas e equipamentos. **Sem servidor, contas externas ou dependências de produção.**
 
@@ -98,3 +100,9 @@ Ainda não definida.
 O [guia de validação](docs/GUIA_DE_VALIDACAO.md) contém testes de regressão, pontos críticos e critérios para revisar a próxima alteração.
 
 O catálogo legado `Catalogo` agora limita IDs, descrições e nomes de pessoas a 200 caracteres, sem caracteres de controle. Também limita o armazenamento em memória a 5.000 itens; tentativas rejeitadas não alteram disponibilidades ou empréstimos.
+
+## Código e roteiro de estudo
+
+Como impediria que o mesmo exemplar aparecesse emprestado a duas pessoas? O [guia de engenharia reversa](docs/ENGENHARIA_REVERSA.md) reúne o mapa dos módulos e uma pergunta técnica baseada no projeto.
+
+Mantido por [João Junior](https://github.com/juniordev830).
